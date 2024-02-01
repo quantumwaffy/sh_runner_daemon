@@ -3,9 +3,12 @@ import sys
 
 import uvicorn
 from fastapi import FastAPI
-from meta import ProjectMeta
+
+from .meta import ProjectMeta
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))  # noqa
+
+from prometheus_fastapi_instrumentator import Instrumentator  # noqa
 
 from config import Config, get_config  # noqa
 
@@ -21,8 +24,9 @@ def get_app() -> FastAPI:
         title=project_meta.title,
         description=project_meta.description,
         version=project_meta.version,
-        **{"docs_url": None, "redoc_url": None} if not config.app.debug else {}
+        **{"docs_url": None, "redoc_url": None} if not config.app.debug else {},
     )
+    Instrumentator().instrument(api).expose(api)
     return api
 
 
